@@ -1,0 +1,338 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  CANDIDATE
+  RECRUITER
+  ADMIN
+}
+
+enum AttributeType {
+  STRING
+  TEXT
+  IMAGE
+  NUMERIC
+  DATE
+  PERIOD
+  BOOLEAN
+  ONE_OF_MANY
+}
+
+enum AttributeCategory {
+  CERTIFICATION
+  DOMAIN_KNOWLEDGE
+  PERSONAL_INFORMATION
+  SOFT_SKILLS
+  LANGUAGE
+  EDUCATION
+  OTHER
+}
+
+enum PositionAccessType {
+  PUBLIC
+  RESTRICTED
+}
+
+enum FilterOperator {
+  EQ
+  NEQ
+  GT
+  GTE
+  LT
+  LTE
+  CONTAINS
+  IN
+}
+
+// ─── User & Auth ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?
+  emailVerified Boolean   @default(false)
+  verifyToken   String?
+  resetToken    String?
+  resetTokenExp DateTime?
+  isBlocked     Boolean   @default(false)
+  role          Role      @default(CANDIDATE)
+  language      String    @default("en")
+  theme         String    @default("light")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  version       Int       @default(0)
+
+  oauthAccounts OAuthAccount[]
+  profile       Profile?
+  cvs           CV[]
+  discussionPosts DiscussionPost[]
+  likes         CVLike[]
+  sessions      UserSession[]
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id         String   @id @default(uuid())
+  userId     String
+  provider   String   // "google" | "facebook"
+  providerId String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("oauth_accounts")
+}
+
+model UserSession {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+// ─── Profile ─────────────────────────────────────────────────────────────────
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  firstName String
+  lastName  String
+  location  String?
+  photoUrl  String?
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attributeValues AttributeValue[]
+  projects        Project[]
+
+  @@map("profiles")
+}
+
+// ─── Attribute Library ───────────────────────────────────────────────────────
+
+model Attribute {
+  id           String            @id @default(uuid())
+  name         String            @unique
+  category     AttributeCategory
+  type         AttributeType
+  options      String?           // JSON array for ONE_OF_MANY
+  // Optional tuning
+  minLength    Int?
+  maxLength    Int?
+  regexPattern String?
+  minValue     Float?
+  maxValue     Float?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  values              AttributeValue[]
+  positionAttributes  PositionAttribute[]
+  accessRules         AccessRule[]
+
+  @@fulltext([name])
+  @@map("attributes")
+}
+
+model AttributeValue {
+  id          String   @id @default(uuid())
+  profileId   String
+  attributeId String
+  value       String?  // JSON-encoded value for all types
+  version     Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, attributeId])
+  @@map("attribute_values")
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(uuid())
+  profileId   String
+  name        String
+  dateFrom    DateTime
+  dateTo      DateTime?
+  description String   @db.Text
+  version     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profile Profile        @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tags    ProjectTag[]
+
+  @@map("projects")
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  projectTags ProjectTag[]
+  positionTags PositionTag[]
+
+  @@fulltext([name])
+  @@map("tags")
+}
+
+model ProjectTag {
+  projectId String
+  tagId     String
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, tagId])
+  @@map("project_tags")
+}
+
+// ─── Positions ────────────────────────────────────────────────────────────────
+
+model Position {
+  id               String             @id @default(uuid())
+  title            String
+  shortDescription String             @db.Text
+  accessType       PositionAccessType @default(PUBLIC)
+  maxProjects      Int                @default(3)
+  version          Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  attributes   PositionAttribute[]
+  accessRules  AccessRule[]
+  positionTags PositionTag[]
+  cvs          CV[]
+  discussions  DiscussionPost[]
+
+  @@fulltext([title, shortDescription])
+  @@map("positions")
+}
+
+model PositionAttribute {
+  id          String    @id @default(uuid())
+  positionId  String
+  attributeId String
+  order       Int       @default(0)
+  required    Boolean   @default(false)
+
+  position  Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([positionId, attributeId])
+  @@map("position_attributes")
+}
+
+model PositionTag {
+  positionId String
+  tagId      String
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([positionId, tagId])
+  @@map("position_tags")
+}
+
+model AccessRule {
+  id          String         @id @default(uuid())
+  positionId  String
+  attributeId String
+  operator    FilterOperator
+  value       String         // JSON-encoded comparison value
+
+  position  Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@map("access_rules")
+}
+
+// ─── CVs ─────────────────────────────────────────────────────────────────────
+
+model CV {
+  id         String   @id @default(uuid())
+  userId     String
+  positionId String
+  isHidden   Boolean  @default(false)
+  version    Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  likes    CVLike[]
+
+  @@unique([userId, positionId])
+  @@map("cvs")
+}
+
+model CVLike {
+  cvId        String
+  recruiterId String
+  createdAt   DateTime @default(now())
+
+  cv        CV   @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  recruiter User @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@id([cvId, recruiterId])
+  @@map("cv_likes")
+}
+
+// ─── Discussions ──────────────────────────────────────────────────────────────
+
+model DiscussionPost {
+  id         String   @id @default(uuid())
+  positionId String
+  authorId   String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("discussion_posts")
+}
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+
+model Badge {
+  id          String @id @default(uuid())
+  key         String @unique
+  label       String
+  description String
+  threshold   Int
+
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  userId    String
+  badgeId   String
+  earnedAt  DateTime @default(now())
+
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+  @@map("user_badges")
+}
