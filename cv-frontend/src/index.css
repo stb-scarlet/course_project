@@ -1,0 +1,207 @@
+/* ── CV Manager Global Styles ── */
+
+:root {
+  --brand-primary: #2563eb;
+  --brand-primary-hover: #1d4ed8;
+  --brand-accent: #7c3aed;
+  --surface-bg: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+
+  --transition: 0.18s ease;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+[data-theme='dark'] {
+  --surface-bg: #0f172a;
+  --surface-card: #1e293b;
+  --surface-border: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+}
+
+/* Bootstrap overrides */
+body {
+  background-color: var(--surface-bg);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+[data-theme='dark'] .bg-white,
+[data-theme='dark'] .card {
+  background-color: var(--surface-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--surface-border) !important;
+}
+
+[data-theme='dark'] .table {
+  --bs-table-bg: var(--surface-card);
+  --bs-table-color: var(--text-primary);
+  --bs-table-border-color: var(--surface-border);
+  --bs-table-striped-bg: #1a2744;
+  --bs-table-hover-bg: #243352;
+}
+
+[data-theme='dark'] .form-control,
+[data-theme='dark'] .form-select {
+  background-color: #1e293b;
+  color: var(--text-primary);
+  border-color: var(--surface-border);
+}
+
+[data-theme='dark'] .form-control:focus,
+[data-theme='dark'] .form-select:focus {
+  background-color: #1e293b;
+  color: var(--text-primary);
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+[data-theme='dark'] .modal-content,
+[data-theme='dark'] .dropdown-menu,
+[data-theme='dark'] .navbar {
+  background-color: var(--surface-card) !important;
+  border-color: var(--surface-border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .nav-link,
+[data-theme='dark'] .dropdown-item {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme='dark'] .nav-link:hover,
+[data-theme='dark'] .dropdown-item:hover {
+  color: var(--text-primary) !important;
+  background-color: #243352 !important;
+}
+
+/* ── Table row hover actions ── */
+.table-hover-actions tbody tr {
+  position: relative;
+  cursor: pointer;
+}
+
+.table-hover-actions tbody tr .row-actions {
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.table-hover-actions tbody tr:hover .row-actions {
+  opacity: 1;
+}
+
+.table-hover-actions tbody tr.row-selected .row-actions {
+  opacity: 1;
+}
+
+/* ── Empty value highlight ── */
+.empty-value {
+  color: var(--danger);
+  font-style: italic;
+  font-size: 0.85em;
+}
+
+/* ── Tag pills ── */
+.tag-pill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: #dbeafe;
+  color: #1e40af;
+  margin: 2px;
+  transition: background var(--transition);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.tag-pill:hover { background: #bfdbfe; color: #1e40af; }
+
+[data-theme='dark'] .tag-pill {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+/* ── Tag cloud ── */
+.tag-cloud-item { transition: transform var(--transition), opacity var(--transition); }
+.tag-cloud-item:hover { transform: scale(1.1); opacity: 0.85; }
+
+/* ── Auto-save status ── */
+.autosave-indicator {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.autosave-indicator.saving { color: var(--warning); }
+.autosave-indicator.saved { color: var(--success); }
+.autosave-indicator.conflict { color: var(--danger); }
+
+/* ── CV attribute rows ── */
+.cv-attribute-row { border-bottom: 1px solid var(--surface-border); padding: 0.5rem 0; }
+.cv-attribute-row:last-child { border-bottom: none; }
+
+/* ── Profile tabs ── */
+.profile-tab-content { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── Discussion ── */
+.discussion-post {
+  border-left: 3px solid var(--brand-primary);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--surface-card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* ── Toolbar (selected-row actions) ── */
+.bulk-toolbar {
+  position: sticky;
+  top: 60px;
+  z-index: 100;
+  background: var(--brand-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; } }
+
+/* ── Navbar search ── */
+.navbar-search { max-width: 300px; }
+.navbar-search .form-control { border-radius: 999px; font-size: 0.875rem; }
+
+/* ── Stats cards ── */
+.stat-card {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  background: var(--surface-card);
+  text-align: center;
+  transition: box-shadow var(--transition);
+}
+.stat-card:hover { box-shadow: 0 4px 20px rgba(37,99,235,0.10); }
+.stat-card .stat-number { font-size: 2rem; font-weight: 700; color: var(--brand-primary); }
+.stat-card .stat-label { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; }
+
+/* ── CV print styles ── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .card { border: 1px solid #ccc !important; }
+}
