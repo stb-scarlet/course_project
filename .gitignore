@@ -1,2 +1,3 @@
 /cv-backend/node_modules
+/cv-backend/.env
 /cv-frontend/node_modules

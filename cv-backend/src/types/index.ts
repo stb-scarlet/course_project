@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role } from "@prisma/client";
 
 export interface JwtPayload {
   userId: string;
@@ -18,11 +18,13 @@ export interface AuthRequest extends Express.Request {
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-        role: Role;
-        email: string;
-      };
+      user?: User;
+    }
+    
+    interface User {
+      id: string;
+      email: string;
+      role: Role;
     }
   }
 }

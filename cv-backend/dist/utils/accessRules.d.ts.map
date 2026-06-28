@@ -1,0 +1,1 @@
+{"version":3,"file":"accessRules.d.ts","sourceRoot":"","sources":["../../src/utils/accessRules.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,UAAU,EAAE,SAAS,EAAiC,MAAM,gBAAgB,CAAC;AAEtF,KAAK,YAAY,GAAG,UAAU,GAAG;IAAE,SAAS,EAAE,SAAS,CAAA;CAAE,CAAC;AAE1D;;;GAGG;AACH,wBAAgB,mBAAmB,CACjC,KAAK,EAAE,YAAY,EAAE,EACrB,aAAa,EAAE,GAAG,CAAC,MAAM,EAAE,MAAM,GAAG,IAAI,CAAC,GACxC,OAAO,CAoBT"}
