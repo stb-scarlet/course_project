@@ -71,7 +71,7 @@ app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT || '4000');
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📡 Socket.io enabled`);
   console.log(`🌍 Env: ${process.env.NODE_ENV}`);
