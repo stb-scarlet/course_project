@@ -1,11 +1,11 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider        = "postgresql"
   previewFeatures = ["fullTextIndex"]
   engineType      = "library"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -148,7 +148,6 @@ model Attribute {
   positionAttributes  PositionAttribute[]
   accessRules         AccessRule[]
 
-  @@fulltext([name])
   @@map("attributes")
 }
 
@@ -193,7 +192,6 @@ model Tag {
   projectTags ProjectTag[]
   positionTags PositionTag[]
 
-  @@fulltext([name])
   @@map("tags")
 }
 
@@ -226,7 +224,6 @@ model Position {
   cvs          CV[]
   discussions  DiscussionPost[]
 
-  @@fulltext([title, shortDescription])
   @@map("positions")
 }
 
