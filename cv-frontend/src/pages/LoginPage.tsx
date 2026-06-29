@@ -11,6 +11,7 @@ export default function LoginPage() {
   const { setAuth } = useAuthStore();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const baseUrl = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:4000/api'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +56,10 @@ export default function LoginPage() {
         </div>
 
         <div className="d-grid gap-2">
-          <a href="/api/auth/google" className="btn btn-outline-secondary">
+          <a href={`${baseUrl}/auth/google`} className="btn btn-outline-secondary">
             <i className="bi bi-google me-2" />{t('auth.google')}
           </a>
-          <a href="/api/auth/facebook" className="btn btn-outline-secondary">
+          <a href={`${baseUrl}/auth/facebook`} className="btn btn-outline-secondary">
             <i className="bi bi-facebook me-2" />{t('auth.facebook')}
           </a>
         </div>
