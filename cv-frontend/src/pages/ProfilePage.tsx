@@ -61,7 +61,7 @@ export default function ProfilePage() {
   if (loading) return <div className="text-center py-5"><span className="spinner-border text-primary" /></div>;
   if (!profile) return <div className="text-center py-5 text-muted">Profile not found</div>;
 
-  const fullName = `${profile.firstName} ${profile.lastName}`;
+  const fullName = `${profile?.firstName} ${profile?.lastName}`;
 
   return (
     <div className="container-lg">
@@ -72,7 +72,7 @@ export default function ProfilePage() {
             {profile.photoUrl
               ? <img src={profile.photoUrl} alt={fullName} className="rounded-circle" width={80} height={80} style={{ objectFit: 'cover' }} />
               : <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold fs-3"
-                  style={{ width: 80, height: 80 }}>{profile.firstName[0]}{profile.lastName[0]}</div>
+                  style={{ width: 80, height: 80 }}>{profile?.firstName[0]}{profile?.lastName[0]}</div>
             }
             {canEdit && (
               <label className="position-absolute bottom-0 end-0 btn btn-sm btn-primary rounded-circle p-1" style={{ width: 28, height: 28, lineHeight: 1 }}>
