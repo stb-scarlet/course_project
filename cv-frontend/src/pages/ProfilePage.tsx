@@ -40,10 +40,26 @@ export default function ProfilePage() {
     form,
     async (data) => {
       if (!canEdit || !profile) return;
-      const { data: serverProflie } = await profileApi.update({ ...data, version: profile.version });
-      setProfile(serverProflie);
+      try {
+        const { data: serverProflie } = await profileApi.update({ ...data, version: profile.version });
+        const updateData = serverProflie.updated;
+        if (updateData) {
+          setProfile(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              firstName: updateData.firstName,
+              lastName: updateData.lastName,
+              location: updateData.location,
+              version: updateData.version
+            }
+          })
+        }
+      } catch (err) {
+        console.error("Auto-save failed: ", err)
+      }
     },
-    4000
+    1500
   );
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
