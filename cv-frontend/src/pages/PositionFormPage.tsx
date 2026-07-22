@@ -30,7 +30,9 @@ export default function PositionFormPage() {
 
   // Load attributes
   useEffect(() => {
-    attributeApi.list({ limit: 100 }).then(r => setAllAttrs(r.data.items));
+    attributeApi.list({ limit: 100 })
+      .then(r => setAllAttrs(r.data.items))
+      .catch(() => { toast.error( t('common.error')) });
   }, []);
 
   // Load position for edit
@@ -43,7 +45,7 @@ export default function PositionFormPage() {
       setSelectedAttrs(p.attributes?.map((a: any) => ({ attributeId: a.attributeId, order: a.order, required: a.required })) || []);
       setTagNames(p.positionTags?.map((pt: any) => pt.tag.name) || []);
       setAccessRules(p.accessRules?.map((r: any) => ({ attributeId: r.attributeId, operator: r.operator, value: r.value })) || []);
-    });
+    }).catch(() => { toast.error(t('common.error')) });
   }, [id]);
 
   const attrOptions: AttrOption[] = allAttrs.map(a => ({ value: a.id, label: `${a.name} (${a.type})`, attr: a }));
@@ -59,9 +61,20 @@ export default function PositionFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim()) return toast.error('Title is required');
+
     setSaving(true);
     try {
-      const payload = { title, shortDescription: description, accessType, maxProjects, attributeIds: selectedAttrs, tagNames, accessRules, version };
+      const payload = {
+        title: title.trim(),
+        shortDescription: description.trim(), 
+        accessType,
+        maxProjects: maxProjects,
+        attributeIds: selectedAttrs,
+        tagNames,
+        accessRules,
+        version
+      }
       if (isEdit) {
         await positionApi.update(id!, payload);
         toast.success('Position updated');
@@ -70,9 +83,9 @@ export default function PositionFormPage() {
         toast.success('Position created');
       }
       navigate('/positions');
-    } catch (e: any) {
-      if (e.response?.status === 409) toast.error(t('profile.saveConflict'));
-      else toast.error(t('common.error'));
+    } catch (err: any) {
+      if (err.response?.status === 409) toast.error(t('profile.saveConflict'));
+      else toast.error(err.response?.data?.error || t('common.error'));
     } finally { setSaving(false); }
   };
 
@@ -114,6 +127,7 @@ export default function PositionFormPage() {
           <h6 className="fw-semibold mb-3"><i className="bi bi-list-check me-2 text-primary" />{t('positions.attributes')}</h6>
           <Select
             isMulti
+            closeMenuOnSelect={false}
             options={attrOptions}
             value={attrOptions.filter(o => selectedAttrs.some(a => a.attributeId === o.value))}
             onChange={(vals) => setSelectedAttrs((vals as AttrOption[]).map((v, i) => ({ attributeId: v.value, order: i, required: false })))}

@@ -12,6 +12,7 @@ import router from './routes';
 import { errorHandler } from './middlewares/error.middleware';
 
 const app = express();
+app.set('trust proxy', 1); // Allows Express to correctly read the user's IP from the X-Forwarded-For header.
 const httpServer = http.createServer(app);
 
 // ─── Socket.io ────────────────────────────────────────────────────────────────

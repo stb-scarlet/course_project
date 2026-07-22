@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { statsApi } from '@/api';
+import { formatDate } from '@/utils/date'
 import { Stats, Position, TagCloudItem } from '@/types';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -15,10 +16,25 @@ export default function HomePage() {
   const [tags, setTags] = useState<TagCloudItem[]>([]);
 
   useEffect(() => {
-    statsApi.get().then(r => setStats(r.data));
-    statsApi.latestPositions().then(r => setLatest(r.data));
-    statsApi.popularPositions().then(r => setPopular(r.data));
-    statsApi.tagCloud().then(r => setTags(r.data));
+    const fetchDashboardData = async () => {
+      try {
+        const [statsRes, latestRes, popularRes, tagsRes] = await Promise.all([
+          statsApi.get(),
+          statsApi.latestPositions(),
+          statsApi.popularPositions(),
+          statsApi.tagCloud()
+        ]);
+
+        setStats(statsRes.data);
+        setLatest(latestRes.data);
+        setPopular(popularRes.data);
+        setTags(tagsRes.data);
+      } catch (err) {
+        console.error("Failed to load dashboard data", err)
+      }
+    }
+
+    fetchDashboardData();
   }, []);
 
   const maxTagCount = Math.max(...tags.map(t => t.count), 1);
@@ -95,7 +111,7 @@ export default function HomePage() {
                         </span>
                       </td>
                       <td><span className="badge bg-primary-subtle text-primary">{p._count?.cvs ?? 0}</span></td>
-                      <td className="text-muted small">{new Date(p.updatedAt).toLocaleDateString()}</td>
+                      <td className="text-muted small">{formatDate(p.updatedAt)}</td>
                     </tr>
                   ))}
                   {latest.length === 0 && (

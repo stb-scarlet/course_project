@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { profileApi, uploadApi } from '@/api';
-import { Profile, AttributeValue } from '@/types';
+import { Profile } from '@/types';
 import { useAuthStore } from '@/store/auth.store';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import ProfileAttributesTab from '@/components/profile/ProfileAttributesTab';
@@ -32,7 +32,7 @@ export default function ProfilePage() {
       setProfile(r.data);
       setForm({ firstName: r.data.firstName, lastName: r.data.lastName, location: r.data.location || '' });
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => {toast.error(t('common.error'))}).finally(() => setLoading(false));
   }, [userId]);
 
   // Auto-save basic info
@@ -40,10 +40,10 @@ export default function ProfilePage() {
     form,
     async (data) => {
       if (!canEdit || !profile) return;
-      await profileApi.update({ ...data, version: profile.version });
-      setProfile(prev => prev ? { ...prev, ...data, version: prev.version + 1 } : prev);
+      const { data: serverProflie } = await profileApi.update({ ...data, version: profile.version });
+      setProfile(serverProflie);
     },
-    7000
+    4000
   );
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,12 +51,11 @@ export default function ProfilePage() {
     if (!file) return;
     setPhotoUploading(true);
     try {
-      const { data } = await uploadApi.image(file);
-      await profileApi.update({ photoUrl: data.url, version: profile!.version });
-      setProfile(prev => prev ? { ...prev, photoUrl: data.url, version: prev.version + 1 } : prev);
+      const { data: uploadData  } = await uploadApi.image(file);
+      const { data: updatedProfile  } = await profileApi.update({ photoUrl: uploadData.url, version: profile!.version });
+      setProfile(updatedProfile);
       toast.success('Photo updated');
-    } catch { toast.error(t('common.error')); }
-    finally { setPhotoUploading(false); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); } finally { setPhotoUploading(false); }
   };
 
   if (loading) return <div className="text-center py-5"><span className="spinner-border text-primary" /></div>;
@@ -137,7 +136,7 @@ export default function ProfilePage() {
             </div>
             {canEdit && (
               <p className="text-muted small mt-3 mb-0">
-                <i className="bi bi-info-circle me-1" />Changes are saved automatically every 7 seconds.
+                <i className="bi bi-info-circle me-1" />{t('profile.autosaveInfo')}
               </p>
             )}
           </div>

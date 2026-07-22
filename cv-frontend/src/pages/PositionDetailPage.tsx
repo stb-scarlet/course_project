@@ -25,11 +25,14 @@ export default function PositionDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    positionApi.get(id).then(r => { setPosition(r.data); setLoading(false); });
+    positionApi.get(id)
+      .then(r => { setPosition(r.data); setLoading(false); })
+      .catch(() => {t('common.error');})
+      .finally(() => { setLoading(false) });
     if (isCandidate && user) {
-      positionApi.checkAccess(id).then(r => setHasAccess(r.data.hasAccess)).catch(() => setHasAccess(false));
+      positionApi.checkAccess(id).then(r => setHasAccess(r.data.hasAccess)).catch(() => toast.error(t('common.error'))).finally(() => setHasAccess(false));
     }
-  }, [id]);
+  }, [id, user]);
 
   const handleDelete = async () => {
     if (!confirm(t('positions.confirmDelete'))) return;
@@ -44,10 +47,22 @@ export default function PositionDetailPage() {
       const { data } = await cvApi.create(id!);
       toast.success('CV created!');
       navigate(`/cvs/${data.id}`);
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || t('common.error'));
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'));
     } finally { setCreating(false); }
   };
+
+  const handleDuplicate = async () => {
+    try {
+      setCreating(true);
+      await positionApi.duplicate(id!);
+      navigate('/positions');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'))
+    } finally {
+      setCreating(false)
+    }
+  }
 
   if (loading) return <div className="text-center py-5"><span className="spinner-border text-primary" /></div>;
   if (!position) return <div className="text-center py-5 text-muted">Not found</div>;
@@ -93,7 +108,7 @@ export default function PositionDetailPage() {
             )}
             {isRecruiter && (
               <>
-                <button className="btn btn-outline-secondary btn-sm" onClick={() => positionApi.duplicate(id!).then(() => { toast.success('Duplicated'); navigate('/positions'); })}>
+                <button className="btn btn-outline-secondary btn-sm" onClick={handleDuplicate}>
                   <i className="bi bi-copy me-1" />{t('positions.duplicate')}
                 </button>
                 <Link to={`/positions/${id}/edit`} className="btn btn-outline-primary btn-sm">
@@ -169,7 +184,7 @@ export default function PositionDetailPage() {
                           <li key={rule.id} className="list-group-item">
                             <span className="fw-medium">{rule.attribute?.name}</span>
                             <span className="badge bg-secondary-subtle text-secondary mx-2">{rule.operator}</span>
-                            <span className="text-primary fw-medium">{rule.value}</span>
+                            <span className="text-primary fw-medium">{JSON.parse(rule.value)}</span>
                           </li>
                         ))}
                       </ul>

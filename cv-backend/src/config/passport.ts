@@ -1,4 +1,5 @@
 import passport from 'passport';
+// import { Request } from 'express';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
@@ -13,7 +14,8 @@ export function configurePassport() {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
         secretOrKey: process.env.JWT_SECRET!,
       },
-      async (payload: JwtPayload, done) => {
+
+      async ( payload: JwtPayload, done) => {
         try {
           const user = await prisma.user.findUnique({
             where: { id: payload.userId },

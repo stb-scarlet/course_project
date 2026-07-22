@@ -24,13 +24,26 @@ export default function Layout() {
     document.documentElement.setAttribute('data-theme', next);
     document.body.setAttribute('data-bs-theme', next);
     localStorage.setItem('theme', next);
-    if (user) await authApi.updatePreferences({ theme: next });
+    if (user) {
+      try {
+        await authApi.updatePreferences({ theme: next });
+      } catch (err) {
+        console.error("Failed to save the topic to the server: ", err)
+      }
+    }
   };
 
   const toggleLang = async () => {
     const next = i18n.language === 'en' ? 'ru' : 'en';
-    await i18n.changeLanguage(next);
-    if (user) await authApi.updatePreferences({ language: next });
+
+    try {
+      await i18n.changeLanguage(next);
+      if (user) {
+        await authApi.updatePreferences({ language: next });
+      }
+    } catch (err) {
+      console.error("Ошибка при смене языка интерфейса:", err);
+    }
   };
 
   return (

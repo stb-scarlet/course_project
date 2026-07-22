@@ -49,17 +49,17 @@ export async function listAttributes(req: Request, res: Response, next: NextFunc
 // GET /api/attributes/recent — recently used by this user
 export async function recentAttributes(req: Request, res: Response, next: NextFunction) {
   try {
-    const profile = await prisma.profile.findUnique({ where: { userId: req.user!.id } });
-    if (!profile) return res.json([]);
-
     const recent = await prisma.attributeValue.findMany({
-      where: { profileId: profile.id },
       include: { attribute: true },
       orderBy: { updatedAt: 'desc' },
       take: 10,
     });
 
-    res.json(recent.map((av) => av.attribute));
+    const uniqueAttrs = Array.from(
+      new Map(recent.map(rv => [rv.attribute.id, rv.attribute])).values()
+    );
+
+    res.json(uniqueAttrs.slice(0, 10));
   } catch (err) {
     next(err);
   }

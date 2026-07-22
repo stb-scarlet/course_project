@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/auth.store';
 
 export default function AuthCallbackPage() {
   const [params] = useSearchParams();
-  const { setAuth, fetchMe } = useAuthStore();
+  const { fetchMe } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

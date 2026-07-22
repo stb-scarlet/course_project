@@ -28,17 +28,25 @@ export default function AttributesPage() {
     try {
       const { data } = await attributeApi.list({ q, category: cat || undefined, page: p, limit: 20 });
       setAttrs(data.items); setTotal(data.total); setPages(data.pages); setPage(p);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'));
     } finally { setLoading(false); }
-  }, [search, categoryFilter]);
+  }, [search, categoryFilter, t]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { 
+    const timer = setTimeout(() => {
+      load(1, search, categoryFilter)
+    }, 400)
+
+    return () => clearTimeout(timer)
+  }, [search, categoryFilter, load]);
 
   const openCreate = () => { setEditing(null); setForm(emptyForm()); };
   const openEdit = (a: Attribute) => {
     setEditing(a);
     setForm({
       name: a.name, category: a.category, type: a.type,
-      options: a.options ? JSON.parse(a.options).join(', ') : '',
+      options: parseOptions(a.options)
     });
   };
 
@@ -54,27 +62,44 @@ export default function AttributesPage() {
           : undefined,
       };
       if (editing) {
-        const { data } = await attributeApi.update(editing.id, payload);
-        setAttrs(prev => prev.map(a => a.id === editing.id ? data : a));
+        await attributeApi.update(editing.id, payload);
         toast.success('Updated');
       } else {
         await attributeApi.create(payload);
         toast.success('Created');
-        load(1);
       }
-      setEditing(undefined as any);
-    } catch (e: any) {
-      toast.error(e.response?.data?.error || t('common.error'));
+      const bootstrap = (window as any).bootstrap;
+      const modalEl = document.getElementById('attrModal');
+
+      if (modalEl && bootstrap) {
+        bootstrap.Modal.getInstance(modalEl)?.hide();;
+      }
+      setEditing(null);
+      load(editing ? page : 1)
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'));
     } finally { setSaving(false); }
+  };
+
+  const parseOptions = (optionsString: string | null | undefined): string => {
+    if (!optionsString) return '—';
+    try {
+      const parsed = JSON.parse(optionsString);
+      return Array.isArray(parsed) ? parsed.join(', ') : String(parsed);
+    } catch {
+      return optionsString;
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this attribute?')) return;
+    const isLastItemOnPage = attrs.length === 1 && page > 1 ? page - 1 : page;
     try {
       await attributeApi.delete(id);
       setAttrs(prev => prev.filter(a => a.id !== id));
       toast.success('Deleted');
-    } catch { toast.error(t('common.error')); }
+      load(isLastItemOnPage)
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   return (
@@ -88,10 +113,10 @@ export default function AttributesPage() {
           <div className="input-group" style={{ minWidth: 200 }}>
             <span className="input-group-text"><i className="bi bi-search" /></span>
             <input className="form-control" placeholder={t('attributes.searchPlaceholder')}
-              value={search} onChange={e => { setSearch(e.target.value); load(1, e.target.value, categoryFilter); }} />
+              value={search} onChange={e => { setSearch(e.target.value); }} />
           </div>
           <select className="form-select" style={{ width: 'auto' }} value={categoryFilter}
-            onChange={e => { setCategoryFilter(e.target.value); load(1, search, e.target.value); }}>
+            onChange={e => { setCategoryFilter(e.target.value); }}>
             <option value="">{t('attributes.filterByCategory')}</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -121,7 +146,7 @@ export default function AttributesPage() {
                   <td><span className="badge bg-secondary-subtle text-secondary">{a.category}</span></td>
                   <td><span className="badge bg-primary-subtle text-primary">{a.type}</span></td>
                   <td className="small text-muted">
-                    {a.options ? JSON.parse(a.options).join(', ') : '—'}
+                    {parseOptions(a.options)}
                   </td>
                   <td>
                     <div className="row-actions d-flex gap-1">
@@ -179,7 +204,7 @@ export default function AttributesPage() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-outline-secondary" data-bs-dismiss="modal">{t('common.cancel')}</button>
-              <button className="btn btn-primary" data-bs-dismiss={saving ? undefined : 'modal'} onClick={handleSave} disabled={saving || !form.name}>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !form.name}>
                 {saving && <span className="spinner-border spinner-border-sm me-2" />}
                 {t('common.save')}
               </button>

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
+import { formatDate } from '@/utils/date'
 import toast from 'react-hot-toast';
 import { cvApi, profileApi } from '@/api';
-import { CV, GeneratedCV, AttributeValue } from '@/types';
+import { CV, GeneratedCV, AttributeValue, Project } from '@/types';
 import { useAuthStore } from '@/store/auth.store';
 
 export default function CVPage() {
@@ -30,34 +31,45 @@ export default function CVPage() {
       setCV(r.data.cv);
       setGenerated(r.data.generated);
       setLikesCount(r.data.cv._count?.likes ?? 0);
+      setLiked(r.data.isLiked ?? false)
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [cvId]);
+    }).catch(() => {toast.error(t('common.error'))}).finally(() => setLoading(false));
+  }, [cvId, user?.id]);
 
   const handleLike = async () => {
+    if (!cvId) return;
+
+    const previousLiked = liked;
+    const previousCount = likesCount;
+
+    setLiked(!previousLiked);
+    setLikesCount(prev => previousLiked ? prev - 1 : prev + 1)
+    
     try {
-      if (liked) {
+      if (previousLiked) {
         await cvApi.unlike(cvId!);
-        setLiked(false); setLikesCount(c => c - 1);
       } else {
         await cvApi.like(cvId!);
-        setLiked(true); setLikesCount(c => c + 1);
       }
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) {
+      setLiked(previousLiked);
+      setLikesCount(previousCount);
+      toast.error(err.response?.data?.error || t('common.error'));
+    }
   };
 
   const handleSaveAttr = async (av: AttributeValue) => {
     try {
-      await profileApi.upsertAttribute(av.attributeId, { value: editValue || null, version: av.version });
+      const { data: attrResult } = await profileApi.upsertAttribute(av.attributeId, { value: editValue || null, version: av.version });
       setGenerated(prev => prev ? {
         ...prev,
-        attributes: prev.attributes.map(a => a.attributeId === av.attributeId ? { ...a, value: editValue || null, version: a.version + 1 } : a)
+        attributes: prev.attributes.map(a => a.attributeId === av.attributeId ? { ...a, attrResult } : a)
       } : prev);
       setEditingAttr(null);
       toast.success(t('profile.saved'));
-    } catch (e: any) {
-      if (e.response?.status === 409) toast.error(t('profile.saveConflict'));
-      else toast.error(t('common.error'));
+    } catch (err: any) {
+      if (err.response?.status === 409) toast.error(t('profile.saveConflict'));
+      else toast.error(err.response?.data?.error || t('common.error'));
     }
   };
 
@@ -136,9 +148,9 @@ export default function CVPage() {
             <h5 className="fw-semibold mb-3" style={{ color: 'var(--brand-primary)' }}>
               <i className="bi bi-list-check me-2" />{t('cv.attributes')}
             </h5>
-            <div className="row g-0">
+            <div className="row gx-4 gy-2">
               {generated.attributes.map(av => (
-                <div key={av.attributeId} className="col-12 col-md-6 cv-attribute-row pe-4">
+                <div key={av.attributeId} className="col-12 col-md-6 cv-attribute-row">
                   <div className="d-flex justify-content-between align-items-start py-2">
                     <div className="flex-grow-1">
                       <div className="small fw-semibold text-muted text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '0.05em' }}>
@@ -179,12 +191,12 @@ export default function CVPage() {
               <i className="bi bi-folder me-2" />{t('cv.projects')}
             </h5>
             <div className="d-flex flex-column gap-3">
-              {generated.projects.map((p: any) => (
+              {generated.projects.map((p: Project) => (
                 <div key={p.id} className="ps-3" style={{ borderLeft: '3px solid var(--surface-border)' }}>
                   <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
                     <span className="fw-semibold">{p.name}</span>
                     <span className="text-muted small">
-                      {new Date(p.dateFrom).toLocaleDateString()} — {p.dateTo ? new Date(p.dateTo).toLocaleDateString() : 'Present'}
+                      {formatDate(p.dateFrom)} — {p.dateTo ? formatDate(p.dateTo) : t('cv.present')}
                     </span>
                   </div>
                   <div className="d-flex flex-wrap gap-1 mb-2">

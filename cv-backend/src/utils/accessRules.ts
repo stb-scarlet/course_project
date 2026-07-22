@@ -1,4 +1,4 @@
-import { AccessRule, Attribute, FilterOperator, AttributeType } from '@prisma/client';
+import { AccessRule, Attribute, FilterOperator } from '@prisma/client';
 
 type RuleWithAttr = AccessRule & { attribute: Attribute };
 
@@ -19,12 +19,17 @@ export function evaluateAccessRules(
 
     try {
       profileVal = JSON.parse(rawValue);
-      ruleVal = JSON.parse(rule.value);
     } catch {
-      return false;
+      profileVal = rawValue
     }
 
-    if (!applyOperator(profileVal, rule.operator, ruleVal, rule.attribute.type)) {
+    try {
+      ruleVal = JSON.parse(rule.value);
+    } catch {
+      ruleVal = rule.value;
+    }
+
+    if (!applyOperator(profileVal, rule.operator, ruleVal)) {
       return false;
     }
   }
@@ -34,8 +39,7 @@ export function evaluateAccessRules(
 function applyOperator(
   profileVal: unknown,
   operator: FilterOperator,
-  ruleVal: unknown,
-  type: AttributeType
+  ruleVal: unknown
 ): boolean {
   switch (operator) {
     case FilterOperator.EQ:

@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const { setAuth } = useAuthStore();
   const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: '' });
   const [loading, setLoading] = useState(false);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,12 +25,12 @@ export default function RegisterPage() {
     } finally { setLoading(false); }
   };
 
-  const f = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }));
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'var(--surface-bg)' }}>
-      <div className="card shadow-sm p-4" style={{ width: '100%', maxWidth: 440 }}>
+      <div className="card bg-white shadow-sm p-4" style={{ width: '100%', maxWidth: 440 }}>
         <div className="text-center mb-4">
           <i className="bi bi-file-earmark-person-fill text-primary fs-1" />
           <h4 className="mt-2 fw-bold">CV Manager</h4>
@@ -65,8 +66,8 @@ export default function RegisterPage() {
           <hr /><span className="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">{t('auth.registerWith')}</span>
         </div>
         <div className="d-grid gap-2">
-          <a href="/api/auth/google" className="btn btn-outline-secondary"><i className="bi bi-google me-2" />{t('auth.google')}</a>
-          <a href="/api/auth/facebook" className="btn btn-outline-secondary"><i className="bi bi-facebook me-2" />{t('auth.facebook')}</a>
+          <a href={`${baseUrl}/api/auth/google`} className="btn btn-outline-secondary"><i className="bi bi-google me-2" />{t('auth.google')}</a>
+          <a href={`${baseUrl}/api/auth/facebook`} className="btn btn-outline-secondary"><i className="bi bi-facebook me-2" />{t('auth.facebook')}</a>
         </div>
 
         <p className="text-center mt-3 small text-muted">

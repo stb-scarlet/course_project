@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/date';
 import toast from 'react-hot-toast';
 import { adminApi } from '@/api';
 import { User, Role } from '@/types';
@@ -17,6 +18,7 @@ export default function AdminPage() {
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -27,10 +29,20 @@ export default function AdminPage() {
       const { data } = await adminApi.listUsers({ page: p, limit: 20, q, role: role || undefined });
       setUsers(data.items); setTotal(data.total); setPages(data.pages); setPage(p);
       setSelected(new Set());
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'))
     } finally { setLoading(false); }
   }, [search, roleFilter]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+  
+  useEffect(() => { load(1, debouncedSearch, roleFilter); }, [debouncedSearch, roleFilter]);
 
   const handleBlock = async (userId: string, blocked: boolean) => {
     try {
@@ -38,7 +50,7 @@ export default function AdminPage() {
       else await adminApi.block(userId);
       toast.success(blocked ? 'Unblocked' : 'Blocked');
       load(page);
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const handleDelete = async (userId: string) => {
@@ -47,7 +59,7 @@ export default function AdminPage() {
       await adminApi.delete(userId);
       toast.success('Deleted');
       load(page);
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const handleRoleChange = async (userId: string, role: Role) => {
@@ -55,7 +67,7 @@ export default function AdminPage() {
       await adminApi.assignRole(userId, role);
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
       toast.success('Role updated');
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const toggleSelect = (id: string) => setSelected(prev => {
@@ -65,8 +77,12 @@ export default function AdminPage() {
   });
 
   const roleBadge = (role: Role) => {
-    const map = { ADMIN: 'bg-danger-subtle text-danger', RECRUITER: 'bg-primary-subtle text-primary', CANDIDATE: 'bg-secondary-subtle text-secondary' };
-    return map[role];
+    const map = { 
+      ADMIN: 'bg-danger-subtle text-danger border-danger-subtle', 
+      RECRUITER: 'bg-primary-subtle text-primary border-primary-subtle', 
+      CANDIDATE: 'bg-secondary-subtle text-secondary border-secondary-subtle' 
+    };
+    return map[role] || 'bg-light text-dark';
   };
 
   return (
@@ -81,10 +97,10 @@ export default function AdminPage() {
         <div className="input-group" style={{ maxWidth: 280 }}>
           <span className="input-group-text"><i className="bi bi-search" /></span>
           <input className="form-control" placeholder={t('common.search')}
-            value={search} onChange={e => { setSearch(e.target.value); load(1, e.target.value, roleFilter); }} />
+            value={search} onChange={e => { setSearch(e.target.value); }} />
         </div>
         <select className="form-select" style={{ width: 'auto' }} value={roleFilter}
-          onChange={e => { setRoleFilter(e.target.value); load(1, search, e.target.value); }}>
+          onChange={e => {setRoleFilter(e.target.value);}}>
           <option value="">All roles</option>
           {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
@@ -95,9 +111,15 @@ export default function AdminPage() {
         <div className="bulk-toolbar mb-3">
           <span>{selected.size} selected</span>
           <button className="btn btn-sm btn-light ms-2" onClick={async () => {
-            if (!confirm('Delete selected users?')) return;
-            await Promise.all([...selected].map(id => adminApi.delete(id)));
-            toast.success('Deleted'); load(page);
+            try {
+              await Promise.all([...selected].map(id => adminApi.delete(id)));
+              setSelected(new Set());
+              toast.success('Deleted');
+            } catch (err: any) {
+              toast.error(err.response?.data?.error || t('common.error'));
+            } finally {
+              load(page);
+            }
           }}>
             <i className="bi bi-trash me-1" />{t('common.delete')}
           </button>
@@ -137,9 +159,9 @@ export default function AdminPage() {
                     {u.profile ? `${u.profile.firstName} ${u.profile.lastName}` : '—'}
                   </td>
                   <td>
-                    <select className="form-select form-select-sm" style={{ width: 120 }} value={u.role}
+                    <select className={`form-select form-select-sm ${roleBadge(u.role)}`} style={{ width: 130 }} value={u.role}
                       onChange={e => handleRoleChange(u.id, e.target.value as Role)}>
-                      {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                      {ROLES.map(r => <option key={r} value={r} className="bg-white text-dark">{r}</option>)}
                     </select>
                   </td>
                   <td>
@@ -148,7 +170,7 @@ export default function AdminPage() {
                       {u.isBlocked ? t('admin.blocked') : t('admin.active')}
                     </span>
                   </td>
-                  <td className="small text-muted">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                  <td className="small text-muted">{formatDate(u.createdAt)}</td>
                   <td>
                     <div className="row-actions d-flex gap-1">
                       <button

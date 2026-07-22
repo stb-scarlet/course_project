@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/date';
 import toast from 'react-hot-toast';
 import { positionApi } from '@/api';
 import { Position } from '@/types';
@@ -23,7 +24,7 @@ export default function PositionsPage() {
 
   const isRecruiter = user?.role === 'RECRUITER' || user?.role === 'ADMIN';
 
-  const load = useCallback(async (p = 1, q = search) => {
+  const load = useCallback(async (p = 1, q = '') => {
     setLoading(true);
     try {
       const { data } = await positionApi.list({ q, page: p, limit: 20 });
@@ -32,10 +33,17 @@ export default function PositionsPage() {
       setPages(data.pages);
       setPage(p);
       setSelected(new Set());
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || t('common.error'))
     } finally { setLoading(false); }
-  }, [search]);
+  }, [t]);
 
-  useEffect(() => { load(1, searchParams.get('q') || ''); }, [searchParams.get('q')]);
+  useEffect(() => {   
+    const timer = setTimeout(() => {
+      load(1, search)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [search, load]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,11 +61,13 @@ export default function PositionsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('positions.confirmDelete'))) return;
+    const isLastItemOnPage = positions.length === 1 && page > 1 ? page - 1 : page;
     try {
       await positionApi.delete(id);
+      setPositions(prev => prev.filter(a => a.id !== id));
       toast.success('Deleted');
-      load(page);
-    } catch { toast.error(t('common.error')); }
+      load(isLastItemOnPage);
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const handleDuplicate = async (id: string) => {
@@ -65,7 +75,7 @@ export default function PositionsPage() {
       await positionApi.duplicate(id);
       toast.success('Duplicated');
       load(page);
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   return (
@@ -96,10 +106,14 @@ export default function PositionsPage() {
           <span>{selected.size} selected</span>
           <button className="btn btn-sm btn-light ms-2"
             onClick={async () => {
-              if (!confirm(t('positions.confirmDelete'))) return;
-              await Promise.all([...selected].map(id => positionApi.delete(id)));
-              toast.success('Deleted');
-              load(page);
+              try {
+                if (!confirm(t('positions.confirmDelete'))) return;
+                await Promise.all([...selected].map(id => positionApi.delete(id)));
+                toast.success('Deleted');
+                load(page);
+              } catch (err: any) {
+                toast.error(err.response?.data?.error || t('common.error'))
+              }
             }}>
             <i className="bi bi-trash me-1" />{t('common.delete')}
           </button>
@@ -159,7 +173,7 @@ export default function PositionsPage() {
                     </span>
                   </td>
                   <td><span className="badge bg-primary-subtle text-primary">{pos._count?.cvs ?? 0}</span></td>
-                  <td className="small text-muted">{new Date(pos.updatedAt).toLocaleDateString()}</td>
+                  <td className="small text-muted">{formatDate(pos.updatedAt)}</td>
                   <td onClick={e => e.stopPropagation()}>
                     <div className="row-actions d-flex gap-1 justify-content-end">
                       {isRecruiter && (

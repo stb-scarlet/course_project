@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Select from 'react-select';
 import toast from 'react-hot-toast';
 import { attributeApi, profileApi } from '@/api';
 import { Profile, Attribute, AttributeValue } from '@/types';
@@ -9,7 +8,7 @@ interface Props { profile: Profile; canEdit: boolean; onUpdate: (p: Profile) => 
 
 export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Props) {
   const { t } = useTranslation();
-  const [allAttrs, setAllAttrs] = useState<Attribute[]>([]);
+  const [allAttrs, setAllAttrs] = useState<Attribute[]>([]);  
   const [recentAttrs, setRecentAttrs] = useState<Attribute[]>([]);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -19,8 +18,8 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
   const profileAttrIds = new Set(profile.attributeValues.map(av => av.attributeId));
 
   useEffect(() => {
-    attributeApi.list({ limit: 100 }).then(r => setAllAttrs(r.data.items));
-    attributeApi.recent().then(r => setRecentAttrs(r.data));
+    attributeApi.list({ limit: 100 }).then(r => setAllAttrs(r.data.items)).catch((err) => {console.error("Failed to load Attributes for position: ", err)});
+    attributeApi.recent().then(r => setRecentAttrs(r.data)).catch((err) => {console.error("Failed to load Recent Attributes for position: ", err)});
   }, []);
 
   const availableToAdd = allAttrs.filter(a =>
@@ -31,28 +30,30 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
 
   const handleAdd = async (attr: Attribute) => {
     try {
-      await profileApi.upsertAttribute(attr.id, { value: null, version: 0 });
-      const newAv: AttributeValue = { id: '', profileId: profile.id, attributeId: attr.id, value: null, version: 0, attribute: attr };
-      onUpdate({ ...profile, attributeValues: [...profile.attributeValues, newAv] });
-    } catch { toast.error(t('common.error')); }
+      const { data: serverCreatedValue } = await profileApi.upsertAttribute(attr.id, { value: null, version: 0 });
+      onUpdate({ ...profile, attributeValues: [...profile.attributeValues, serverCreatedValue] });
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const handleRemove = async (attrId: string) => {
     try {
       await profileApi.removeAttribute(attrId);
       onUpdate({ ...profile, attributeValues: profile.attributeValues.filter(av => av.attributeId !== attrId) });
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   const handleSaveValue = async (av: AttributeValue) => {
     try {
-      const { data } = await profileApi.upsertAttribute(av.attributeId, { value: editValue || null, version: av.version });
+    let finalValue: string | null = editValue.trim() || null;
+    if (av.attribute.type === 'NUMERIC' && editValue) finalValue = String(Number(editValue));
+    if (av.attribute.type === 'BOOLEAN') finalValue = editValue === 'true' ? 'true' : 'false'; 
+      const { data } = await profileApi.upsertAttribute(av.attributeId, { value: finalValue || null, version: av.version });
       onUpdate({ ...profile, attributeValues: profile.attributeValues.map(a => a.attributeId === av.attributeId ? { ...a, ...data } : a) });
       setEditingId(null);
       toast.success(t('profile.saved'));
-    } catch (e: any) {
-      if (e.response?.status === 409) toast.error(t('profile.saveConflict'));
-      else toast.error(t('common.error'));
+    } catch (err: any) {
+      if (err.response?.status === 409) toast.error(t('profile.saveConflict'));
+      else toast.error(err.response?.data?.error || t('common.error'));
     }
   };
 

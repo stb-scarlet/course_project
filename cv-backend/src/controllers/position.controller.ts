@@ -105,6 +105,11 @@ export async function createPosition(req: Request, res: Response, next: NextFunc
 // PATCH /api/positions/:id
 export async function updatePosition(req: Request, res: Response, next: NextFunction) {
   try {
+    
+    if (req.user!.role !== Role.ADMIN && req.user!.role !== Role.RECRUITER) {
+      throw new AppError(403, 'Forbidden. Only HR or Admin can update positions');
+    }
+
     const data = positionSchema.parse(req.body);
 
     const existing = await prisma.position.findUnique({ where: { id: req.params.id } });
@@ -117,30 +122,30 @@ export async function updatePosition(req: Request, res: Response, next: NextFunc
     const tagConnects = await resolvePositionTags(data.tagNames);
 
     // Delete and recreate relations (simple approach)
-    await prisma.$transaction([
+    const [,,, position] = await prisma.$transaction([
       prisma.positionAttribute.deleteMany({ where: { positionId: req.params.id } }),
       prisma.accessRule.deleteMany({ where: { positionId: req.params.id } }),
       prisma.positionTag.deleteMany({ where: { positionId: req.params.id } }),
-    ]);
 
-    const position = await prisma.position.update({
-      where: { id: req.params.id },
-      data: {
-        title: data.title,
-        shortDescription: data.shortDescription,
-        accessType: data.accessType,
-        maxProjects: data.maxProjects,
-        version: { increment: 1 },
-        attributes: { create: data.attributeIds },
-        accessRules: { create: data.accessRules },
-        positionTags: { create: tagConnects },
-      },
-      include: {
-        attributes: { include: { attribute: true } },
-        accessRules: { include: { attribute: true } },
-        positionTags: { include: { tag: true } },
-      },
-    });
+      prisma.position.update({
+        where: { id: req.params.id },
+        data: {
+          title: data.title,
+          shortDescription: data.shortDescription,
+          accessType: data.accessType,
+          maxProjects: data.maxProjects,
+          version: { increment: 1 },
+          attributes: { create: data.attributeIds },
+          accessRules: { create: data.accessRules },
+          positionTags: { create: tagConnects },
+        },
+        include: {
+          attributes: { include: { attribute: true } },
+          accessRules: { include: { attribute: true } },
+          positionTags: { include: { tag: true } },
+        },
+      })
+    ]);
 
     res.json(position);
   } catch (err) {
@@ -198,6 +203,10 @@ export async function deletePosition(req: Request, res: Response, next: NextFunc
 // GET /api/positions/:id/access-check — can current candidate access this position?
 export async function checkAccess(req: Request, res: Response, next: NextFunction) {
   try {
+    if (req.user!.role === 'ADMIN' || req.user!.role === 'RECRUITER') {
+      return res.json({ hasAccess: true });
+    }
+
     const position = await prisma.position.findUnique({
       where: { id: req.params.id },
       include: { accessRules: { include: { attribute: true } } },

@@ -11,7 +11,10 @@ export default function LoginPage() {
   const { setAuth } = useAuthStore();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const baseUrl = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:4000/api'
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
+
+  const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'var(--surface-bg)' }}>
-      <div className="card shadow-sm p-4" style={{ width: '100%', maxWidth: 420 }}>
+      <div className="card shadow-sm p-4 bg-white" style={{ width: '100%', maxWidth: 420 }}>
         <div className="text-center mb-4">
           <i className="bi bi-file-earmark-person-fill text-primary fs-1" />
           <h4 className="mt-2 fw-bold">CV Manager</h4>
@@ -38,12 +41,12 @@ export default function LoginPage() {
           <div className="mb-3">
             <label className="form-label">{t('auth.email')}</label>
             <input type="email" className="form-control" required
-              value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              value={form.email} onChange={f('email')} />
           </div>
           <div className="mb-3">
             <label className="form-label">{t('auth.password')}</label>
             <input type="password" className="form-control" required
-              value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+              value={form.password} onChange={f('password')} />
           </div>
           <button type="submit" className="btn btn-primary w-100" disabled={loading}>
             {loading ? <span className="spinner-border spinner-border-sm me-2" /> : null}

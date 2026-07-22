@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/date';
 import { positionApi } from '@/api';
 import { CV } from '@/types';
 import Pagination from '@/components/common/Pagination';
@@ -17,15 +18,23 @@ export default function PositionCVsTab({ positionId }: Props) {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const load = useCallback(async (p = 1, q = search) => {
+  const load = useCallback(async (p = 1, q = '') => {
     setLoading(true);
     try {
       const { data } = await positionApi.getCVs(positionId, { page: p, limit: 20, q });
       setCVs(data.items); setTotal(data.total); setPages(data.pages); setPage(p);
+    } catch (err) {
+      console.error('Failed to load CVs for position: ', err)
     } finally { setLoading(false); }
-  }, [positionId, search]);
+  }, [positionId]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      load(1, search);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search, load]);
 
   return (
     <div>
@@ -34,7 +43,7 @@ export default function PositionCVsTab({ positionId }: Props) {
           <span className="input-group-text"><i className="bi bi-search" /></span>
           <input className="form-control" placeholder={t('common.search')}
             value={search}
-            onChange={e => { setSearch(e.target.value); load(1, e.target.value); }} />
+            onChange={e => { setSearch(e.target.value); }} />
         </div>
         <span className="text-muted small d-flex align-items-center">{total} CVs</span>
       </div>
@@ -76,7 +85,7 @@ export default function PositionCVsTab({ positionId }: Props) {
                         <i className="bi bi-heart-fill me-1" />{cv._count?.likes ?? 0}
                       </span>
                     </td>
-                    <td className="small text-muted">{new Date(cv.createdAt).toLocaleDateString()}</td>
+                    <td className="small text-muted">{formatDate(cv.createdAt)}</td>
                     <td onClick={e => e.stopPropagation()}>
                       <div className="row-actions">
                         <button className="btn btn-sm btn-outline-primary" onClick={() => navigate(`/cvs/${cv.id}`)}>

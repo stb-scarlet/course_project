@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/date';
 import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import { profileApi } from '@/api';
@@ -17,7 +18,7 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const openCreate = () => { setEditing(null as any); setForm(emptyProject()); };
+  const openCreate = () => { setEditing(null); setForm(emptyProject()); };
   const openEdit = (p: Project) => {
     setEditing(p);
     setForm({ name: p.name, dateFrom: p.dateFrom.slice(0, 10), dateTo: p.dateTo?.slice(0, 10) || '', description: p.description, tags: p.tags.map(t => t.tag.name), version: p.version });
@@ -37,13 +38,14 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
   };
 
   const handleSave = async () => {
+    if (!form.name.trim()) return toast.error('Project name is required');
     setSaving(true);
     try {
       const payload = {
-        name: form.name,
+        name: form.name.trim(),
         dateFrom: new Date(form.dateFrom).toISOString(),
         dateTo: form.dateTo ? new Date(form.dateTo).toISOString() : null,
-        description: form.description,
+        description: form.description.trim(),
         tags: form.tags,
         version: form.version,
       };
@@ -54,7 +56,13 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
         const { data } = await profileApi.createProject(payload);
         onUpdate({ ...profile, projects: [...profile.projects, data] });
       }
-      setEditing(undefined as any);
+      const bootstrap = (window as any).bootstrap;
+      const modalEl = document.getElementById('projectModal');
+
+      if (modalEl && bootstrap) {
+        bootstrap.Modal.getInstance(modalEl)?.hide();;
+      }
+      setEditing(null);
       toast.success(t('profile.saved'));
     } catch (e: any) {
       if (e.response?.status === 409) toast.error(t('profile.saveConflict'));
@@ -69,8 +77,6 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
       toast.success('Deleted');
     } catch { toast.error(t('common.error')); }
   };
-
-  const isOpen = form.name !== undefined && (editing !== undefined);
 
   return (
     <div>
@@ -92,7 +98,7 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
                 <div className="d-flex align-items-center gap-2 mb-1">
                   <h6 className="fw-bold mb-0">{p.name}</h6>
                   <span className="text-muted small">
-                    {new Date(p.dateFrom).toLocaleDateString()} — {p.dateTo ? new Date(p.dateTo).toLocaleDateString() : 'Present'}
+                    {formatDate(p.dateFrom)} — {p.dateTo ? formatDate(p.dateTo) : 'Present'}
                   </span>
                 </div>
                 <div className="d-flex flex-wrap gap-1 mb-2">
@@ -173,7 +179,7 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
             </div>
             <div className="modal-footer">
               <button className="btn btn-outline-secondary" data-bs-dismiss="modal">{t('common.cancel')}</button>
-              <button className="btn btn-primary" data-bs-dismiss={saving ? undefined : 'modal'} onClick={handleSave} disabled={saving || !form.name || !form.dateFrom}>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !form.name || !form.dateFrom}>
                 {saving && <span className="spinner-border spinner-border-sm me-2" />}
                 {t('common.save')}
               </button>

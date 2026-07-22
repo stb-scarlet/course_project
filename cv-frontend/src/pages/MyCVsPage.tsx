@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '@/utils/date'
 import toast from 'react-hot-toast';
 import { cvApi } from '@/api';
 import { CV } from '@/types';
@@ -12,7 +13,11 @@ export default function MyCVsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    cvApi.my().then(r => { setCVs(r.data); setLoading(false); });
+    cvApi.my()
+      .then(r => { setCVs(r.data); setLoading(false); })
+      .catch(() => {
+        toast.error(t('common.error'));
+      }).finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (cvId: string) => {
@@ -21,7 +26,7 @@ export default function MyCVsPage() {
       await cvApi.delete(cvId);
       setCVs(prev => prev.filter(c => c.id !== cvId));
       toast.success('Deleted');
-    } catch { toast.error(t('common.error')); }
+    } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); }
   };
 
   if (loading) return <div className="text-center py-5"><span className="spinner-border text-primary" /></div>;
@@ -69,8 +74,8 @@ export default function MyCVsPage() {
                         <i className="bi bi-heart-fill me-1" />{cv._count?.likes ?? 0}
                       </span>
                     </td>
-                    <td className="small text-muted">{new Date(cv.createdAt).toLocaleDateString()}</td>
-                    <td className="small text-muted">{new Date(cv.updatedAt).toLocaleDateString()}</td>
+                    <td className="small text-muted">{formatDate(cv.createdAt)}</td>
+                    <td className="small text-muted">{formatDate(cv.updatedAt)}</td>
                     <td onClick={e => e.stopPropagation()}>
                       <div className="row-actions d-flex gap-1">
                         <button className="btn btn-sm btn-outline-primary" onClick={() => navigate(`/cvs/${cv.id}`)}>

@@ -15,7 +15,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
+      token: localStorage.getItem('token'),
       setAuth: (user, token) => {
         localStorage.setItem('token', token);
         set({ user, token });
@@ -25,15 +25,16 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, token: null });
       },
       fetchMe: async () => {
+        if (!localStorage.getItem('token')) return;
+
         try {
           const { data } = await authApi.getMe();
           set({ user: data });
         } catch {
-          localStorage.removeItem('token');
           set({ user: null, token: null });
         }
       },
     }),
-    { name: 'auth-store', partialize: (s) => ({ token: s.token, user: s.user }) }
+    { name: 'auth-store', partialize: (s) => ({ user: s.user }) }
   )
 );

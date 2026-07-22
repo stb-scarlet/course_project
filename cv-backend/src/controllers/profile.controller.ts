@@ -40,7 +40,7 @@ export async function getProfile(req: Request, res: Response, next: NextFunction
     // Recruiters only see CV-related data (read-only)
     if (isRecruiter && !isAdmin) {
       const { attributeValues, projects, ...publicData } = profile;
-      return res.json({ ...publicData, attributeValues, projects });
+      return res.json({publicData});
     }
 
     res.json(profile);
@@ -83,7 +83,7 @@ export async function updateProfile(req: Request, res: Response, next: NextFunct
       data: { ...data, version: { increment: 1 } },
     });
 
-    res.json({ ...updated });
+    res.json({ updated });
   } catch (err) {
     next(err);
   }
@@ -130,6 +130,11 @@ export async function upsertAttributeValue(req: Request, res: Response, next: Ne
       include: { attribute: true },
     });
 
+    await prisma.profile.update({
+      where: { id: profile.id },
+      data: { updatedAt: new Date() }
+    });
+
     res.json(result);
   } catch (err) {
     next(err);
@@ -142,8 +147,22 @@ export async function removeAttributeFromProfile(req: Request, res: Response, ne
     const profile = await prisma.profile.findUnique({ where: { userId: req.user!.id } });
     if (!profile) throw new AppError(404, 'Profile not found');
 
-    await prisma.attributeValue.deleteMany({
-      where: { profileId: profile.id, attributeId: req.params.attributeId },
+    try {
+      await prisma.attributeValue.delete({
+        where: {
+          profileId_attributeId: {
+            profileId: profile.id,
+            attributeId: req.params.attributeId,
+          },
+        },
+      });
+    } catch {
+      throw new AppError(404, 'Attribute value not found on this profile');
+    }
+
+    await prisma.profile.update({
+      where: { id: profile.id },
+      data: { updatedAt: new Date() }
     });
 
     res.status(204).send();
@@ -184,6 +203,11 @@ export async function createProject(req: Request, res: Response, next: NextFunct
       include: { tags: { include: { tag: true } } },
     });
 
+    await prisma.profile.update({
+      where: { id: profile.id },
+      data: { updatedAt: new Date() }
+    });
+
     res.status(201).json(project);
   } catch (err) {
     next(err);
@@ -196,7 +220,13 @@ export async function updateProject(req: Request, res: Response, next: NextFunct
     const data = projectSchema.parse(req.body);
     const { projectId } = req.params;
 
-    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    const project = await prisma.project.findFirst({ 
+      where: { 
+        id: projectId,
+        profile: {userId: req.user!.id}
+      } 
+    });
+
     if (!project) throw new AppError(404, 'Project not found');
 
     if (project.version !== (data.version ?? 0)) {
@@ -219,6 +249,11 @@ export async function updateProject(req: Request, res: Response, next: NextFunct
       include: { tags: { include: { tag: true } } },
     });
 
+    await prisma.profile.update({
+      where: { id: project.profileId },
+      data: { updatedAt: new Date() }
+    });
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -229,14 +264,28 @@ export async function updateProject(req: Request, res: Response, next: NextFunct
 export async function deleteProject(req: Request, res: Response, next: NextFunction) {
   try {
     const { projectId } = req.params;
-    const profile = await prisma.profile.findUnique({ where: { userId: req.user!.id } });
-    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    const project = await prisma.project.findFirst({ 
+      where: { 
+        id: projectId,
+        profile: {
+          userId: req.user!.id
+        }
+      } 
+    });
 
-    if (!project || project.profileId !== profile?.id) {
+    if (!project) {
       throw new AppError(404, 'Project not found');
     }
 
-    await prisma.project.delete({ where: { id: projectId } });
+    await prisma.$transaction([
+      prisma.project.delete({ where: { id: projectId } }),
+
+      prisma.profile.update({
+        where: {id: project.profileId},
+        data: {updatedAt: new Date()}
+      })
+    ])
+    
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -261,14 +310,14 @@ export async function autocompleteTags(req: Request, res: Response, next: NextFu
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function resolveTagIds(tagNames: string[]) {
-  const result: { tagId: string }[] = [];
-  for (const name of tagNames) {
+  const promises = tagNames.map(async (name) => {
     const tag = await prisma.tag.upsert({
       where: { name },
       create: { name },
       update: {},
     });
-    result.push({ tagId: tag.id });
-  }
-  return result;
+    return {tagId: tag.id}
+  });
+
+  return await Promise.all(promises);
 }

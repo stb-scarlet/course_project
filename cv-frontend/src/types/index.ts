@@ -109,6 +109,7 @@ export interface CV {
   updatedAt: string;
   position?: { title: string; shortDescription: string };
   user?: { profile?: { firstName: string; lastName: string; photoUrl?: string } };
+  isLiked?: boolean;
   _count?: { likes: number };
 }
 

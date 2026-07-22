@@ -1,7 +1,8 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const api = axios.create({
-  baseURL: (import.meta as any).env.VITE_API_BASE_URL  || 'http://localhost:4000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL  || 'http://localhost:4000/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -20,6 +21,11 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+
+    if (err.response?.status === 500) {
+      toast.error('Внутренняя ошибка сервера. Мы уже чиним её!');
+    }
+
     return Promise.reject(err);
   }
 );

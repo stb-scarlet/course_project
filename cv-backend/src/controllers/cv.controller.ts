@@ -7,6 +7,7 @@ import { evaluateAccessRules } from '../utils/accessRules';
 
 // GET /api/cvs/:cvId
 export async function getCV(req: Request, res: Response, next: NextFunction) {
+  
   try {
     const cv = await prisma.cV.findUnique({
       where: { id: req.params.cvId },
@@ -28,6 +29,10 @@ export async function getCV(req: Request, res: Response, next: NextFunction) {
           },
         },
         _count: { select: { likes: true } },
+        likes: {
+          where: { recruiterId: req.user!.id },
+          select: { recruiterId: true }
+        }
       },
     });
 
@@ -42,7 +47,8 @@ export async function getCV(req: Request, res: Response, next: NextFunction) {
 
     // Build generated CV data
     const generated = buildCVData(cv);
-    res.json({ cv, generated });
+    const isLiked = cv.likes.length > 0
+    res.json({ cv, generated, isLiked });
   } catch (err) {
     next(err);
   }

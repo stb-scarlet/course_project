@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { io, Socket } from 'socket.io-client';
+import { formatDate } from '@/utils/date';
 import toast from 'react-hot-toast';
 import { discussionApi } from '@/api';
 import { DiscussionPost } from '@/types';
@@ -19,16 +20,20 @@ export default function DiscussionTab({ positionId }: Props) {
   const [posting, setPosting] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+  const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
   useEffect(() => {
+    if (!positionId) return;
     // Load initial posts
     discussionApi.list(positionId, { limit: 100 }).then(r => {
-      setPosts(r.data.posts);
-      setLoading(false);
-    });
+      setPosts(r.data.posts || []);
+    }).catch((err) => {
+      console.error("Failed to load discussion posts: ", err)
+    }).finally(() => setLoading(false));
 
     // Socket.io for real-time
-    const socket = io({ path: '/socket.io', transports: ['websocket'] });
+    const wsUrl = VITE_API_BASE_URL.replace(/\/api$/, '');
+    const socket = io(wsUrl, { path: '/socket.io', transports: ['websocket'] });
     socketRef.current = socket;
     socket.emit('joinPosition', positionId);
     socket.on('newPost', (post: DiscussionPost) => {
@@ -41,7 +46,7 @@ export default function DiscussionTab({ positionId }: Props) {
       socket.emit('leavePosition', positionId);
       socket.disconnect();
     };
-  }, [positionId]);
+  }, [positionId, VITE_API_BASE_URL]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,7 +100,7 @@ export default function DiscussionTab({ positionId }: Props) {
                   </span>
                 </div>
                 <span className="text-muted small ms-auto">
-                  {new Date(post.createdAt).toLocaleString()}
+                  {formatDate(post.createdAt)}
                 </span>
               </div>
               <div className="prose small">
