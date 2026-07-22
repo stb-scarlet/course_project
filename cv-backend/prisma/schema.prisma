@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgresql_course_project_user:7UalXZ9O9GZtyUhfiAaIiKStOTOFrDTJ@://render.com"
+  url      = env("DATABASE_URL")
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
