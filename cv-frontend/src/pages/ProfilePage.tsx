@@ -42,16 +42,16 @@ export default function ProfilePage() {
       if (!canEdit || !profile) return;
       try {
         const { data: serverProflie } = await profileApi.update({ ...data, version: profile.version });
-        const updateData = serverProflie.updated;
-        if (updateData) {
+        const updatedData = serverProflie.updated;
+        if (updatedData) {
           setProfile(prev => {
             if (!prev) return null;
             return {
               ...prev,
-              firstName: updateData.firstName,
-              lastName: updateData.lastName,
-              location: updateData.location,
-              version: updateData.version
+              firstName: updatedData.firstName,
+              lastName: updatedData.lastName,
+              location: updatedData.location,
+              version: updatedData.version
             }
           })
         }
@@ -69,7 +69,17 @@ export default function ProfilePage() {
     try {
       const { data: uploadData  } = await uploadApi.image(file);
       const { data: updatedProfile  } = await profileApi.update({ photoUrl: uploadData.url, version: profile!.version });
-      setProfile(updatedProfile);
+      const updatedData = updatedProfile.updated;
+      if (updatedData) {
+        setProfile(prev => {
+          if (!prev) return null;
+          return {
+            ...prev, // Сохраняем все старые поля и массивы проектов/атрибутов
+            photoUrl: updatedData.photoUrl, // Обновляем ссылку на фото
+            version: updatedData.version    // Обновляем версию для защиты от конфликтов
+          };
+        });
+      }
       toast.success('Photo updated');
     } catch (err: any) { toast.error(err.response?.data?.error || t('common.error')); } finally { setPhotoUploading(false); }
   };
