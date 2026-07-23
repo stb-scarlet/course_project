@@ -29,9 +29,14 @@ export default function PositionDetailPage() {
       .catch(() => {t('common.error');})
       .finally(() => { setLoading(false) });
     if (isCandidate && user) {
-      positionApi.checkAccess(id).then(r => setHasAccess(r.data.hasAccess)).catch(() => toast.error(t('common.error'))).finally(() => setHasAccess(false));
+      positionApi.checkAccess(id)
+        .then(r => setHasAccess(r.data.hasAccess))
+        .catch((err: any) => {
+          toast.error("Access check failed:", err)
+          setHasAccess(false)
+        })
     }
-  }, [id, user]);
+  }, [id, user, isCandidate]);
 
   const handleDelete = async () => {
     if (!confirm(t('positions.confirmDelete'))) return;
