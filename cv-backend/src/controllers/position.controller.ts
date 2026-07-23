@@ -213,7 +213,8 @@ export async function checkAccess(req: Request, res: Response, next: NextFunctio
     });
     if (!position) throw new AppError(404, 'Position not found');
 
-    if (position.accessType === PositionAccessType.PUBLIC) {
+    const accessType = String(position.accessType).toUpperCase();
+    if (accessType === PositionAccessType.PUBLIC) {
       return res.json({ hasAccess: true });
     }
 

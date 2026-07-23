@@ -25,7 +25,7 @@ export default function PositionDetailPage() {
   useEffect(() => {
     if (!id) return;
     positionApi.get(id)
-      .then(r => { setPosition(r.data); setLoading(false); })
+      .then(r => { setPosition(r.data); })
       .catch(() => {t('common.error');})
       .finally(() => { setLoading(false) });
     if (isCandidate && user) {
