@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import { positionApi, cvApi } from '@/api';
 import { Position } from '@/types';

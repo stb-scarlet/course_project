@@ -41,20 +41,20 @@ export default function RegisterPage() {
           <div className="row g-2 mb-3">
             <div className="col">
               <label className="form-label">{t('auth.firstName')}</label>
-              <input className="form-control" required value={form.firstName} onChange={f('firstName')} />
+              <input className="form-control shadow-none" required value={form.firstName} onChange={f('firstName')} />
             </div>
             <div className="col">
               <label className="form-label">{t('auth.lastName')}</label>
-              <input className="form-control" required value={form.lastName} onChange={f('lastName')} />
+              <input className="form-control shadow-none" required value={form.lastName} onChange={f('lastName')} />
             </div>
           </div>
           <div className="mb-3">
             <label className="form-label">{t('auth.email')}</label>
-            <input type="email" className="form-control" required value={form.email} onChange={f('email')} />
+            <input type="email" className="form-control shadow-none" required value={form.email} onChange={f('email')} />
           </div>
           <div className="mb-3">
             <label className="form-label">{t('auth.password')}</label>
-            <input type="password" className="form-control" required minLength={8} value={form.password} onChange={f('password')} />
+            <input type="password" className="form-control shadow-none" required minLength={8} value={form.password} onChange={f('password')} />
           </div>
           <button type="submit" className="btn btn-primary w-100" disabled={loading}>
             {loading && <span className="spinner-border spinner-border-sm me-2" />}

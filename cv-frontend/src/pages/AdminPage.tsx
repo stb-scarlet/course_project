@@ -96,10 +96,10 @@ export default function AdminPage() {
       <div className="d-flex flex-wrap gap-2 mb-4">
         <div className="input-group" style={{ maxWidth: 280 }}>
           <span className="input-group-text"><i className="bi bi-search" /></span>
-          <input className="form-control" placeholder={t('common.search')}
+          <input className="form-control shadow-none" placeholder={t('common.search')}
             value={search} onChange={e => { setSearch(e.target.value); }} />
         </div>
-        <select className="form-select" style={{ width: 'auto' }} value={roleFilter}
+        <select className="form-select shadow-none" style={{ width: 'auto' }} value={roleFilter}
           onChange={e => {setRoleFilter(e.target.value);}}>
           <option value="">All roles</option>
           {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
@@ -148,7 +148,7 @@ export default function AdminPage() {
               {!loading && users.map(u => (
                 <tr key={u.id} className={selected.has(u.id) ? 'table-active row-selected' : ''}>
                   <td>
-                    <input type="checkbox" className="form-check-input" checked={selected.has(u.id)}
+                    <input type="checkbox" className="form-check-input shadow-none" checked={selected.has(u.id)}
                       onChange={() => toggleSelect(u.id)} disabled={u.id === me?.id} />
                   </td>
                   <td>
@@ -159,7 +159,7 @@ export default function AdminPage() {
                     {u.profile ? `${u.profile.firstName} ${u.profile.lastName}` : '—'}
                   </td>
                   <td>
-                    <select className={`form-select form-select-sm ${roleBadge(u.role)}`} style={{ width: 130 }} value={u.role}
+                    <select className={`form-select form-select-sm shadow-none ${roleBadge(u.role)}`} style={{ width: 130 }} value={u.role}
                       onChange={e => handleRoleChange(u.id, e.target.value as Role)}>
                       {ROLES.map(r => <option key={r} value={r} className="bg-white text-dark">{r}</option>)}
                     </select>

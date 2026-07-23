@@ -112,10 +112,10 @@ export default function AttributesPage() {
         <div className="d-flex gap-2 ms-auto flex-wrap">
           <div className="input-group" style={{ minWidth: 200 }}>
             <span className="input-group-text"><i className="bi bi-search" /></span>
-            <input className="form-control" placeholder={t('attributes.searchPlaceholder')}
+            <input className="form-control shadow-none" placeholder={t('attributes.searchPlaceholder')}
               value={search} onChange={e => { setSearch(e.target.value); }} />
           </div>
-          <select className="form-select" style={{ width: 'auto' }} value={categoryFilter}
+          <select className="form-select shadow-none" style={{ width: 'auto' }} value={categoryFilter}
             onChange={e => { setCategoryFilter(e.target.value); }}>
             <option value="">{t('attributes.filterByCategory')}</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -180,24 +180,24 @@ export default function AttributesPage() {
             <div className="modal-body">
               <div className="mb-3">
                 <label className="form-label">{t('attributes.name')} <span className="text-danger">*</span></label>
-                <input className="form-control" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <input className="form-control shadow-none" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="mb-3">
                 <label className="form-label">{t('attributes.category')}</label>
-                <select className="form-select" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as AttributeCategory }))}>
+                <select className="form-select shadow-none" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as AttributeCategory }))}>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="mb-3">
                 <label className="form-label">{t('attributes.type')}</label>
-                <select className="form-select" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as AttributeType }))}>
+                <select className="form-select shadow-none" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as AttributeType }))}>
                   {TYPES.map(tp => <option key={tp} value={tp}>{tp}</option>)}
                 </select>
               </div>
               {form.type === 'ONE_OF_MANY' && (
                 <div className="mb-3">
                   <label className="form-label">{t('attributes.options')}</label>
-                  <input className="form-control" placeholder="e.g. Beginner, Intermediate, Advanced"
+                  <input className="form-control shadow-none" placeholder="e.g. Beginner, Intermediate, Advanced"
                     value={form.options} onChange={e => setForm(f => ({ ...f, options: e.target.value }))} />
                 </div>
               )}

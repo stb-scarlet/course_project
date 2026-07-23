@@ -116,7 +116,7 @@ export default function DiscussionTab({ positionId }: Props) {
       {user ? (
         <div className="card p-3">
           <textarea
-            className="form-control mb-2 font-monospace"
+            className="form-control mb-2 font-monospace shadow-none"
             rows={3}
             placeholder={t('discussion.placeholder')}
             value={content}

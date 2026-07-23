@@ -158,7 +158,7 @@ export default function CVPage() {
                       </div>
                       {editingAttr === av.attributeId && canEdit ? (
                         <div className="d-flex gap-1 mt-1">
-                          <input className="form-control form-control-sm flex-grow-1" value={editValue}
+                          <input className="form-control shadow-none form-control-sm flex-grow-1" value={editValue}
                             onChange={e => setEditValue(e.target.value)}
                             autoFocus
                             onKeyDown={e => { if (e.key === 'Enter') handleSaveAttr(av); if (e.key === 'Escape') setEditingAttr(null); }} />

@@ -151,7 +151,7 @@ export default function PositionsPage() {
                 >
                   {isRecruiter && (
                     <td onClick={e => e.stopPropagation()}>
-                      <input type="checkbox" className="form-check-input"
+                      <input type="checkbox" className="form-check-input shadow-none"
                         checked={selected.has(pos.id)}
                         onChange={() => toggleSelect(pos.id)} />
                     </td>

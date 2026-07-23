@@ -101,7 +101,7 @@ export default function PositionFormPage() {
           <h6 className="fw-semibold mb-3">Basic Information</h6>
           <div className="mb-3">
             <label className="form-label fw-medium">Title <span className="text-danger">*</span></label>
-            <input className="form-control" required value={title} onChange={e => setTitle(e.target.value)} />
+            <input className="form-control shadow-none" required value={title} onChange={e => setTitle(e.target.value)} />
           </div>
           <div className="mb-3">
             <label className="form-label fw-medium">Short Description</label>
@@ -110,14 +110,14 @@ export default function PositionFormPage() {
           <div className="row g-3">
             <div className="col-md-6">
               <label className="form-label fw-medium">{t('positions.access')}</label>
-              <select className="form-select" value={accessType} onChange={e => setAccessType(e.target.value as PositionAccessType)}>
+              <select className="form-select shadow-none" value={accessType} onChange={e => setAccessType(e.target.value as PositionAccessType)}>
                 <option value="PUBLIC">{t('positions.public')}</option>
                 <option value="RESTRICTED">{t('positions.restricted')}</option>
               </select>
             </div>
             <div className="col-md-6">
               <label className="form-label fw-medium">{t('positions.maxProjects')}</label>
-              <input type="number" className="form-control" min={0} max={20} value={maxProjects} onChange={e => setMaxProjects(+e.target.value)} />
+              <input type="number" className="form-control shadow-none" min={0} max={20} value={maxProjects} onChange={e => setMaxProjects(+e.target.value)} />
             </div>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function PositionFormPage() {
                     <span className="text-muted small" style={{ minWidth: 20 }}>{i + 1}.</span>
                     <span className="flex-grow-1 fw-medium">{attr?.name}</span>
                     <div className="form-check mb-0">
-                      <input type="checkbox" className="form-check-input" checked={sa.required}
+                      <input type="checkbox" className="form-check-input shadow-none" checked={sa.required}
                         onChange={e => setSelectedAttrs(prev => prev.map((a, j) => j === i ? { ...a, required: e.target.checked } : a))} />
                       <label className="form-check-label small">Required</label>
                     </div>
@@ -157,7 +157,7 @@ export default function PositionFormPage() {
         {/* Tags */}
         <div className="card p-4 mb-4">
           <h6 className="fw-semibold mb-3"><i className="bi bi-tags me-2 text-primary" />{t('positions.tags')}</h6>
-          <input className="form-control mb-2" placeholder="Type tag and press Enter or comma..."
+          <input className="form-control mb-2 shadow-none" placeholder="Type tag and press Enter or comma..."
             value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={handleAddTag} />
           <div className="d-flex flex-wrap gap-1">
             {tagNames.map(tag => (
@@ -177,20 +177,20 @@ export default function PositionFormPage() {
             {accessRules.map((rule, i) => (
               <div key={i} className="row g-2 mb-2 align-items-center">
                 <div className="col">
-                  <select className="form-select form-select-sm" value={rule.attributeId}
+                  <select className="form-select form-select-sm shadow-none" value={rule.attributeId}
                     onChange={e => setAccessRules(prev => prev.map((r, j) => j === i ? { ...r, attributeId: e.target.value } : r))}>
                     <option value="">Select attribute...</option>
                     {allAttrs.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div className="col-auto">
-                  <select className="form-select form-select-sm" value={rule.operator}
+                  <select className="form-select form-select-sm shadow-none" value={rule.operator}
                     onChange={e => setAccessRules(prev => prev.map((r, j) => j === i ? { ...r, operator: e.target.value as FilterOperator } : r))}>
                     {OPERATORS.map(op => <option key={op} value={op}>{op}</option>)}
                   </select>
                 </div>
                 <div className="col">
-                  <input className="form-control form-control-sm" placeholder="Value (JSON)" value={rule.value}
+                  <input className="form-control form-control-sm shadow-none" placeholder="Value (JSON)" value={rule.value}
                     onChange={e => setAccessRules(prev => prev.map((r, j) => j === i ? { ...r, value: e.target.value } : r))} />
                 </div>
                 <div className="col-auto">

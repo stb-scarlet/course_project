@@ -39,10 +39,10 @@ export default function Layout() {
     try {
       await i18n.changeLanguage(next);
       if (user) {
-        await authApi.updatePreferences({ language: next });
+        await authApi.updatePreferences({ language: next.toUpperCase() });
       }
     } catch (err) {
-      console.error("Ошибка при смене языка интерфейса:", err);
+      console.error("Error changing the interface language:", err);
     }
   };
 

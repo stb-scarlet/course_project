@@ -62,13 +62,13 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
   const renderValueInput = (av: AttributeValue) => {
     const type = av.attribute.type;
     if (type === 'BOOLEAN') return (
-      <input type="checkbox" className="form-check-input" checked={editValue === 'true'}
+      <input type="checkbox" className="form-check-input shadow-none" checked={editValue === 'true'}
         onChange={e => setEditValue(e.target.checked ? 'true' : 'false')} />
     );
     if (type === 'ONE_OF_MANY') {
       const options = av.attribute.options ? JSON.parse(av.attribute.options) : [];
       return (
-        <select className="form-select form-select-sm" value={editValue} onChange={e => setEditValue(e.target.value)}>
+        <select className="form-select form-select-sm shadow-none" value={editValue} onChange={e => setEditValue(e.target.value)}>
           <option value="">Select...</option>
           {options.map((o: string) => <option key={o} value={o}>{o}</option>)}
         </select>

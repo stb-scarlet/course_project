@@ -40,12 +40,12 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label">{t('auth.email')}</label>
-            <input type="email" className="form-control" required
+            <input type="email" className="form-control shadow-none" required
               value={form.email} onChange={f('email')} />
           </div>
           <div className="mb-3">
             <label className="form-label">{t('auth.password')}</label>
-            <input type="password" className="form-control" required
+            <input type="password" className="form-control shadow-none" required
               value={form.password} onChange={f('password')} />
           </div>
           <button type="submit" className="btn btn-primary w-100" disabled={loading}>

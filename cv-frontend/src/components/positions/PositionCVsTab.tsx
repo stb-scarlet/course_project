@@ -41,7 +41,7 @@ export default function PositionCVsTab({ positionId }: Props) {
       <div className="d-flex gap-2 mb-3">
         <div className="input-group" style={{ maxWidth: 280 }}>
           <span className="input-group-text"><i className="bi bi-search" /></span>
-          <input className="form-control" placeholder={t('common.search')}
+          <input className="form-control shadow-none" placeholder={t('common.search')}
             value={search}
             onChange={e => { setSearch(e.target.value); }} />
         </div>

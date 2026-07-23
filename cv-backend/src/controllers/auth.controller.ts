@@ -123,7 +123,7 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
 export async function updatePreferences(req: Request, res: Response, next: NextFunction) {
   try {
     const schema = z.object({
-      language: z.enum(['en', 'uz', 'pl', 'es', 'ka']).optional(),
+      language: z.enum(['en', 'ru']).optional(),
       theme: z.enum(['light', 'dark']).optional(),
     });
     const data = schema.parse(req.body);
