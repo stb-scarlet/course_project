@@ -31,7 +31,7 @@ export async function listPositions(req: Request, res: Response, next: NextFunct
     const skip = (page - 1) * limit;
 
     const where = q
-      ? { OR: [{ title: { contains: q } }, { shortDescription: { contains: q } }] }
+      ? { OR: [{ title: { contains: q } }, { shortDescription: { contains: q } }, {positionTags: { some: { tag: { name: { contains: q } } } }}] }
       : {};
 
     const [items, total] = await Promise.all([

@@ -40,11 +40,11 @@ export default function HomePage() {
   const maxTagCount = Math.max(...tags.map(t => t.count), 1);
 
   const handleTagClick = (tag: TagCloudItem) => {
-    if (user?.role === 'RECRUITER' || user?.role === 'ADMIN') {
-      navigate(`/cvs/search?q=${tag.name}`);
-    } else {
+    // if (user?.role === 'RECRUITER' || user?.role === 'ADMIN') {
+    //   navigate(`/cvs/search?q=${tag.name}`);
+    // } else {
       navigate(`/positions?q=${tag.name}`);
-    }
+    // }
   };
 
   return (
