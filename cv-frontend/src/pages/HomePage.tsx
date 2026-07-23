@@ -149,7 +149,7 @@ export default function HomePage() {
             <h5 className="fw-semibold mb-3">
               <i className="bi bi-tags me-2 text-primary" />{t('home.tagCloud')}
             </h5>
-            <div className="card px-5 py-3 d-flex flex-wrap gap-1">
+            <div className="card p-3 d-flex flex-wrap gap-1">
               {tags.map(tag => {
                 const size = 0.75 + (tag.count / maxTagCount) * 0.75;
                 return (
