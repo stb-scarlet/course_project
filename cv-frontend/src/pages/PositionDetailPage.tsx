@@ -52,7 +52,15 @@ export default function PositionDetailPage() {
       toast.success('CV created!');
       navigate(`/cvs/${data.id}`);
     } catch (err: any) {
-      toast.error(err.response?.data?.error || t('common.error'));
+      console.error("CV creation error:", err);
+      
+      const serverMessage = err.response?.data?.error;
+
+      if (serverMessage?.toLowerCase().includes('already exists') || serverMessage?.toLowerCase().includes('unique constraint')) {
+        toast.error('You have already created a CV for this position!');
+      } else {
+        toast.error(serverMessage || t('common.error'));
+      }
     } finally { setCreating(false); }
   };
 
