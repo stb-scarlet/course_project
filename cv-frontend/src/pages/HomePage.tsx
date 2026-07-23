@@ -150,7 +150,7 @@ export default function HomePage() {
               <i className="bi bi-tags me-2 text-primary" />{t('home.tagCloud')}
             </h5>
             <div className="card p-3 d-flex flex-wrap gap-1">
-              {tags.map(tag => {
+              {[...tags].sort((a, b) => b.count - a.count).map(tag => {
                 const size = 0.75 + (tag.count / maxTagCount) * 0.75;
                 return (
                   <span
