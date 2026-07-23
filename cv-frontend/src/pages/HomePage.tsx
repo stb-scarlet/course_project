@@ -149,21 +149,14 @@ export default function HomePage() {
             <h5 className="fw-semibold mb-3">
               <i className="bi bi-tags me-2 text-primary" />{t('home.tagCloud')}
             </h5>
-            {/* ИСПРАВЛЕНО: Добавили justify-content-center для красивого распределения облака */}
-            <div className="card p-3 d-flex flex-wrap gap-2 justify-content-center align-items-center">
+            <div className="card px-5 py-3 d-flex flex-wrap gap-1">
               {tags.map(tag => {
                 const size = 0.75 + (tag.count / maxTagCount) * 0.75;
                 return (
                   <span
                     key={tag.id}
-                    // ИСПРАВЛЕНО: Добавлен класс d-inline-block и alignment, чтобы убрать полоски во всю ширину
-                    className="tag-pill tag-cloud-item d-inline-block text-center align-middle m-1"
-                    style={{ 
-                      fontSize: `${size}rem`, 
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap', // Защита: тег из двух слов не разобьется на две строчки
-                      display: 'inline-block' // Жесткая гарантия правильного отображения
-                    }}
+                    className="tag-pill tag-cloud-item"
+                    style={{ fontSize: `${size}rem`, cursor: 'pointer' }}
                     onClick={() => handleTagClick(tag)}
                     title={`${tag.count} uses`}
                   >
@@ -174,7 +167,6 @@ export default function HomePage() {
               {tags.length === 0 && <span className="text-muted small">{t('common.noResults')}</span>}
             </div>
           </div>
-
         </div>
       </div>
     </div>
