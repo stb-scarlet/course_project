@@ -89,7 +89,7 @@ export default function PositionsPage() {
         <form className="ms-auto d-flex gap-2" onSubmit={handleSearch}>
           <div className="input-group" style={{ minWidth: 220 }}>
             <span className="input-group-text"><i className="bi bi-search" /></span>
-            <input className="form-control" placeholder={t('common.search')}
+            <input className="form-control shadow-none" placeholder={t('common.search')}
               value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </form>

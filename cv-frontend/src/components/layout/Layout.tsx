@@ -48,13 +48,13 @@ export default function Layout() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg sticky-top shadow-sm" style={{ borderBottom: '1px solid var(--surface-border)' }}>
+      <nav className="navbar navbar-expand-lg bg-white sticky-top shadow-sm" style={{ borderBottom: '1px solid var(--surface-border)' }}>
         <div className="container-fluid px-3">
           <Link className="navbar-brand fw-bold" to="/" style={{ color: 'var(--brand-primary)' }}>
             <i className="bi bi-file-earmark-person-fill me-2" />CV Manager
           </Link>
 
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+          <button className="navbar-toggler shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
             <span className="navbar-toggler-icon" />
           </button>
 
@@ -66,7 +66,7 @@ export default function Layout() {
                   <i className="bi bi-search text-muted" />
                 </span>
                 <input
-                  className="form-control border-start-0 ps-0"
+                  className="form-control shadow-none"
                   placeholder={t('nav.search')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}

@@ -134,16 +134,16 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
             <div className="modal-body">
               <div className="mb-3">
                 <label className="form-label">{t('profile.projectName')} <span className="text-danger">*</span></label>
-                <input className="form-control" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                <input className="form-control shadow-none" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="row g-3 mb-3">
                 <div className="col-md-6">
                   <label className="form-label">{t('profile.dateFrom')}</label>
-                  <input type="date" className="form-control" value={form.dateFrom} onChange={e => setForm(f => ({ ...f, dateFrom: e.target.value }))} />
+                  <input type="date" className="form-control shadow-none" value={form.dateFrom} onChange={e => setForm(f => ({ ...f, dateFrom: e.target.value }))} />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">{t('profile.dateTo')}</label>
-                  <input type="date" className="form-control" value={form.dateTo} onChange={e => setForm(f => ({ ...f, dateTo: e.target.value }))} />
+                  <input type="date" className="form-control shadow-none" value={form.dateTo} onChange={e => setForm(f => ({ ...f, dateTo: e.target.value }))} />
                 </div>
               </div>
               <div className="mb-3">
@@ -158,7 +158,7 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
                   ))}
                 </div>
                 <div className="position-relative">
-                  <input className="form-control" placeholder="Type tag..." value={tagInput}
+                  <input className="form-control shadow-none" placeholder="Type tag..." value={tagInput}
                     onChange={e => handleTagInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && tagInput) { e.preventDefault(); addTag(tagInput); } }} />
                   {tagSuggestions.length > 0 && (
@@ -172,7 +172,7 @@ export default function ProjectsTab({ profile, canEdit, onUpdate }: Props) {
               </div>
               <div className="mb-3">
                 <label className="form-label">{t('profile.description')}</label>
-                <textarea className="form-control font-monospace" rows={8} value={form.description}
+                <textarea className="form-control font-monospace shadow-none" rows={8} value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Supports **Markdown** formatting" />
               </div>

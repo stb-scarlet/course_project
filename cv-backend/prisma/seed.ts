@@ -89,6 +89,46 @@ async function main() {
   }
   console.log('✅ Badges seeded');
 
+  // Seed positions
+  console.log('🌱 Seeding positions...');
+  
+  const englishAttr = await prisma.attribute.findUnique({ where: { name: 'English Level' } });
+
+  await prisma.position.upsert({
+    where: { id: 'test-position-node-id' },
+    update: {},
+    create: {
+      id: 'test-position-node-id',
+      title: 'Senior Node.js Developer',
+      shortDescription: 'We are looking for a backend engineer to design scalable microservices architectures.',
+      accessType: 'PUBLIC',
+      maxProjects: 5,
+    },
+  });
+
+  await prisma.position.upsert({
+    where: { id: 'test-position-react-id' },
+    update: {},
+    create: {
+      id: 'test-position-react-id',
+      title: 'Fullstack React/TypeScript Engineer',
+      shortDescription: 'Join our team to build modern responsive user interfaces and real-time collaboration tools.',
+      accessType: 'RESTRICTED',
+      maxProjects: 3,
+      ...(englishAttr && {
+        accessRules: {
+          create: {
+            attributeId: englishAttr.id,
+            operator: 'CONTAINS',
+            value: JSON.stringify('B2'),
+          },
+        },
+      }),
+    },
+  });
+
+  console.log('✅ Positions seeded!');
+  
   console.log('\n🎉 Seed complete!');
   console.log('Admin:     admin@cvapp.com / Admin123!');
   console.log('Recruiter: recruiter@cvapp.com / Recruiter123!');

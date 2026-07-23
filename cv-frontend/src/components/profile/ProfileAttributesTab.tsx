@@ -75,15 +75,15 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
       );
     }
     if (type === 'TEXT') return (
-      <textarea className="form-control form-control-sm" rows={3} value={editValue} onChange={e => setEditValue(e.target.value)} />
+      <textarea className="form-control form-control-sm shadow-none" rows={3} value={editValue} onChange={e => setEditValue(e.target.value)} />
     );
     if (type === 'NUMERIC') return (
-      <input type="number" className="form-control form-control-sm" value={editValue} onChange={e => setEditValue(e.target.value)} />
+      <input type="number" className="form-control form-control-sm shadow-none" value={editValue} onChange={e => setEditValue(e.target.value)} />
     );
     if (type === 'DATE') return (
-      <input type="date" className="form-control form-control-sm" value={editValue} onChange={e => setEditValue(e.target.value)} />
+      <input type="date" className="form-control form-control-sm shadow-none" value={editValue} onChange={e => setEditValue(e.target.value)} />
     );
-    return <input type="text" className="form-control form-control-sm" value={editValue} onChange={e => setEditValue(e.target.value)} />;
+    return <input type="text" className="form-control form-control-sm shadow-none" value={editValue} onChange={e => setEditValue(e.target.value)} />;
   };
 
   return (
@@ -99,7 +99,7 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
                 {profile.attributeValues.map(av => (
                   <li key={av.attributeId} className="list-group-item cv-attribute-row">
                     <div className="d-flex align-items-start gap-2">
-                      <div className="flex-grow-1">
+                      <div className="flex-grow-1 ps-2">
                         <div className="fw-medium small mb-1">{av.attribute.name}
                           <span className="badge bg-secondary-subtle text-secondary ms-2" style={{ fontSize: '0.7rem' }}>{av.attribute.category}</span>
                         </div>
@@ -157,10 +157,10 @@ export default function ProfileAttributesTab({ profile, canEdit, onUpdate }: Pro
               </div>
             )}
 
-            <input className="form-control form-control-sm mb-2" placeholder={t('attributes.searchPlaceholder')}
+            <input className="form-control form-control-sm mb-2 shadow-none" placeholder={t('attributes.searchPlaceholder')}
               value={search} onChange={e => setSearch(e.target.value)} />
 
-            <select className="form-select form-select-sm mb-3" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+            <select className="form-select form-select-sm mb-3 shadow-none" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
               <option value="">{t('attributes.filterByCategory')}</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>

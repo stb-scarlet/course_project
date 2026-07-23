@@ -145,17 +145,17 @@ export default function ProfilePage() {
             <div className="row g-3">
               <div className="col-md-6">
                 <label className="form-label">{t('profile.firstName')}</label>
-                <input className="form-control" value={form.firstName} disabled={!canEdit}
+                <input className="form-control shadow-none" value={form.firstName} disabled={!canEdit}
                   onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
               </div>
               <div className="col-md-6">
                 <label className="form-label">{t('profile.lastName')}</label>
-                <input className="form-control" value={form.lastName} disabled={!canEdit}
+                <input className="form-control shadow-none" value={form.lastName} disabled={!canEdit}
                   onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
               </div>
               <div className="col-12">
                 <label className="form-label">{t('profile.location')}</label>
-                <input className="form-control" value={form.location} disabled={!canEdit}
+                <input className="form-control shadow-none" value={form.location} disabled={!canEdit}
                   placeholder="City, Country"
                   onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
               </div>
